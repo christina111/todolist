@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer
+    src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="index.js"></script>
+  <style type="text/tailwindcss">
+    @layer base {
+      h1 {
+        @apply text-4xl text-center font-bold my-10;
+      }
+      h2 {
+        @apply text-3xl text-center font-bold my-7;
+      }
+      h3 {
+        @apply text-2xl font-bold my-3;
+      }
+      button {
+        @apply transition ease-in-out rounded-md text-white bg-slate-400 py-1 px-3 hover:bg-slate-700;
+      }
+      input {
+        @apply outline-slate-700 cursor-pointer;
+      }
+      section {
+        @apply mb-12;
+      }
+      select {
+        @apply border rounded-md py-1 mb-5 border-r-8 border-transparent px-4 text-sm outline outline-neutral-700;
+      }
+    }
+  </style>
+  <title>Tasks for Kristina</title>
+</head>
+
+<body class="flex flex-col min-h-screen">
+  <header class="bg-slate-300">
+    <div
+      class="container flex items-center justify-between xl:max-w-screen-lg 2xl:max-w-screen-xl mx-auto flex-wrap">
+      <a href="/"><img class="w-20 logo" src="images/logo.png" alt="logo"></a>
+    </div>
+  </header>
+  <div class="main flex-auto">
+    <div class="container xl:max-w-screen-lg 2xl:max-w-screen-xl mx-auto">
+      <div class="todo-container" x-data="todoApp()">
+        <h1>Create a task for me</h1>
+        <section id="to-create-a-task">
+          <div class="input_area">
+            <form>
+              <fieldset class="flex">
+                <input
+                  class="user_input_task border rounded-md py-1 px-3 mr-3 w-full md:w-7/12"
+                  type="text" placeholder="What do you want me to do today?" />
+                <button class="todoBtn user_input_task border"
+                  @click="addTodo">Add</button>
+              </fieldset>
+            </form>
+          </div>
+        </section>
+        <section id="list-of-tasks">
+          <h2>List of existing tasks</h2>
+          <select x-show="todos?.length" x-model="filterTasks"
+            @change="filterTodos()" name="tasks" id="tasks-select">
+            <option value="">All tasks</option>
+            <option value="1">Completed tasks</option>
+            <option value="0">Not completed tasks</option>
+          </select>
+          <div class="task_list">
+            <template x-show="filteredTodos.length"
+              x-for="task in filteredTodos" :key="task.id">
+              <div class="todo flex mb-4 w-full items-center">
+                <input type="checkbox"
+                  class="w-4 h-4 accent-slate-700 cursor-pointer"
+                  @click="completeTodo(task)" :checked="task.completed">
+                <div x-text="task.item"
+                  class="task-item mr-2 py-1 px-3 min-w-72 border border-transparent grow"
+                  x-show="!task.editing"
+                  :class="{'completed line-through' : task.completed }">
+                </div>
+                <input type="text" x-show="task.editing" x-model="task.item"
+                  :value="task.item" @click.away="task.editing=false"
+                  class="task_edit border rounded-md border-slate-300 py-1 px-3 mx-2 min-w-72 grow"
+                  :id="`task_edit-${task.id}`" />
+                <button x-show="!task.completed"
+                  x-text="task.editing ? 'Save' : 'Update'"
+                  @click="setEdit(task)" class="mr-2"></button>
+                <button class="task-remove cursor-pointer"
+                  @click="remove(event, task.id)">Delete</button>
+              </div>
+            </template>
+            <div x-model="todos" class="empty_task_msg" x-show="!filteredTodos">
+              No tasks at the moment!
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+  <footer class="bg-slate-300">
+    <div
+      class="container flex justify-between xl:max-w-screen-lg mx-auto 2xl:max-w-screen-xl">
+      <a href="/"><img class="w-20 logo" src="images/logo.png" alt="logo"
+          class="logo"></a>
+      <section class="contact-info">
+        <h3 class="text-xl font-bold my-3">Contact info</h3>
+        <a href="tel:+380976178193" class="phone">+380976178193
+        </a>
+        <a href="mailto:kristina.cononenco@gmail.com"
+          class="email">kristina.cononenco@gmail.com</a>
+      </section>
+    </div>
+  </footer>
+</body>
+
+</html>
