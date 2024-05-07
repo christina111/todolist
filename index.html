@@ -4,115 +4,165 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Todo list | Homepage</title>
+  <meta name="description"
+    content="Todo list made as a technical assignment for WebElephant by junior but enthusiastic developer Kristina Kononenko!">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.8/axios.min.js"></script>
   <script defer
     src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <script src="index.js"></script>
+  <script src="/js/tasksApp.js"></script>
   <style type="text/tailwindcss">
     @layer base {
-      h1 {
-        @apply text-4xl text-center font-bold my-10;
-      }
-      h2 {
-        @apply text-3xl text-center font-bold my-7;
+      h1, h2 {
+        @apply text-4xl font-bold mb-8;
       }
       h3 {
-        @apply text-2xl font-bold my-3;
+        @apply text-2xl font-bold mb-3;
       }
       button {
-        @apply transition ease-in-out rounded-md text-white bg-slate-400 py-1 px-3 hover:bg-slate-700;
+        @apply transition ease-in-out rounded-md text-white bg-slate-500 py-1 px-3 hover:bg-slate-700 h-9;
       }
       input {
-        @apply outline-slate-700 cursor-pointer;
-      }
-      section {
-        @apply mb-12;
+        @apply outline-slate-700 cursor-pointer rounded-md border border-slate-300 py-1 px-3 h-9;
       }
       select {
-        @apply border rounded-md py-1 mb-5 border-r-8 border-transparent px-4 text-sm outline outline-neutral-700;
+        @apply border rounded-md py-1 mb-5 border-r-8 border-transparent px-4 text-sm outline outline-slate-300;
       }
     }
   </style>
   <title>Tasks for Kristina</title>
 </head>
 
-<body class="flex flex-col min-h-screen">
-  <header class="bg-slate-300">
-    <div
-      class="container flex items-center justify-between xl:max-w-screen-lg 2xl:max-w-screen-xl mx-auto flex-wrap">
-      <a href="/"><img class="w-20 logo" src="images/logo.png" alt="logo"></a>
-    </div>
-  </header>
-  <div class="main flex-auto">
-    <div class="container xl:max-w-screen-lg 2xl:max-w-screen-xl mx-auto">
-      <div class="todo-container" x-data="todoApp()">
-        <h1>Create a task for me</h1>
-        <section id="to-create-a-task">
-          <div class="input_area">
-            <form>
-              <fieldset class="flex">
-                <input
-                  class="user_input_task border rounded-md py-1 px-3 mr-3 w-full md:w-7/12"
-                  type="text" placeholder="What do you want me to do today?" />
-                <button class="todoBtn user_input_task border"
-                  @click="addTodo">Add</button>
-              </fieldset>
-            </form>
-          </div>
-        </section>
-        <section id="list-of-tasks">
-          <h2>List of existing tasks</h2>
-          <select x-show="todos?.length" x-model="filterTasks"
-            @change="filterTodos()" name="tasks" id="tasks-select">
-            <option value="">All tasks</option>
-            <option value="1">Completed tasks</option>
-            <option value="0">Not completed tasks</option>
-          </select>
-          <div class="task_list">
-            <template x-show="filteredTodos.length"
-              x-for="task in filteredTodos" :key="task.id">
-              <div class="todo flex mb-4 w-full items-center">
-                <input type="checkbox"
-                  class="w-4 h-4 accent-slate-700 cursor-pointer"
-                  @click="completeTodo(task)" :checked="task.completed">
-                <div x-text="task.item"
-                  class="task-item mr-2 py-1 px-3 min-w-72 border border-transparent grow"
-                  x-show="!task.editing"
-                  :class="{'completed line-through' : task.completed }">
+<body>
+  <div class="flex flex-col min-h-screen">
+    <header class="bg-slate-300">
+      <div
+        class="container pb-5 px-3 xl:max-w-screen-lg 2xl:max-w-screen-xl mx-auto">
+        <a href="/">
+          <picture>
+            <source srcset="/images/logo.webp">
+            <img src="/images/logo.pmg" alt="Site logo" class="w-20" width="80"
+              height="79">
+          </picture>
+        </a>
+      </div>
+    </header>
+    <main class="flex-auto py-16">
+      <div class="container lg:max-w-screen-md mx-auto px-3">
+        <div class="task-container" x-data="tasksApp()" x-init="fetchTasks()">
+          <h1>Create a task for me</h1>
+          <section>
+            <form class="relative pb-9">
+              <fieldset class="flex flex-wrap [&>*]:mb-5">
+                <div class="task-title mr-3 grow min-w-20">
+                  <label class="block mb-2 text-sm" for="task-title">What do
+                    you want me to do?</label>
+                  <input id="task-title" required @keydown="validationError=''"
+                    class="user-input-task w-full text-base" type="text"
+                    placeholder="Type something here...." />
                 </div>
-                <input type="text" x-show="task.editing" x-model="task.item"
-                  :value="task.item" @click.away="task.editing=false"
-                  class="task_edit border rounded-md border-slate-300 py-1 px-3 mx-2 min-w-72 grow"
-                  :id="`task_edit-${task.id}`" />
-                <button x-show="!task.completed"
-                  x-text="task.editing ? 'Save' : 'Update'"
-                  @click="setEdit(task)" class="mr-2"></button>
-                <button class="task-remove cursor-pointer"
-                  @click="remove(event, task.id)">Delete</button>
+                <div class="due-date mr-3 text-sm">
+                  <label class="block mb-2" for="due-date">Due date</label>
+                  <input class="text-base" id="due-date" type="date">
+                </div>
+                <button class="border mt-auto" @click="addTask">Add</button>
+              </fieldset>
+              <div
+                class="error-message mb-5 text-red-500 absolute bottom-3 left-0 text-sm"
+                x-show="validationError" x-text="validationError"></div>
+            </form>
+          </section>
+          <section id="list-of-tasks">
+            <h2>List of existing tasks</h2>
+            <select class="mr-3" x-show="tasks?.length" x-model="filterValue"
+              @change="filterTasks()" name="tasks-filter"
+              id="tasks-filter-select">
+              <option value="">All tasks</option>
+              <option value="1">Completed tasks</option>
+              <option value="0">Not completed tasks</option>
+            </select>
+            <label class="sr-only" for="tasks-filter-select">Filter by</label>
+            <select x-show="tasks?.length" x-model="sortValue"
+              @change="sortTasks" name="tasks-sort" id="tasks-sort-select">
+              <option @click="sortTasks" value="date-added">Sort by: Date
+                added</option>
+              <option @click="sortTasks" value="due-date">Sort by: Due date
+              </option>
+            </select>
+            <label for="tasks-sort-select" class="sr-only">Sort by</label>
+            <div class="task-list">
+              <template class="task-list" x-show="filteredTasks.length"
+                x-for="task in filteredTasks" :key="task.id">
+                <div
+                  class="task px-5 py-1 rounded-md bg-slate-100 flex flex-wrap mb-3 w-full md:items-center">
+                  <input type="checkbox" :id="`completed-task-${task.id}`"
+                    class="w-4 h-4 accent-slate-700 cursor-pointer mt-6 md:mt-0"
+                    @click="completeTask(task)" :checked="task.completed">
+                  <label :for="`completed-task-${task.id}`"
+                    class="sr-only">Completed</label>
+                  <div
+                    class="text-title py-4 relative min-w-72 md:grow basis-0 px-2">
+                    <div x-text="task.title"
+                      class="task-title break-words py-1 px-3 w-full border border-transparent leading-tight"
+                      x-show="!task.editing" @click="setEdit(task)"
+                      :class="{'completed line-through' : task.completed }">
+                    </div>
+                    <input type="text" x-show="task.editing"
+                      x-model="task.title" :value="task.title"
+                      @click.away="updateTask(task)"
+                      class="task-edit border outline-none rounded-md border-slate-300 py-1 px-3 w-full leading-tight"
+                      :id="`task-edit-${task.id}`" />
+                    <div x-text="task.due_date"
+                      class="due-date absolute text-xs text-slate-700 bottom-0 left-5">
+                    </div>
+                  </div>
+                  <div
+                    class="buttons-wrapper flex my-3 justify-end basis-full md:basis-0">
+                    <button class="mr-3 min-w-20"
+                      x-show="!task.editing && !task.completed"
+                      @click="setEdit(task)">Update</button>
+                    <button x-show="!task.completed && task.editing"
+                      @click="updateTask(task)"
+                      class="mr-3 min-w-20">Save</button>
+                    <button class="bg-red-600 cursor-pointer"
+                      @click="removeTask(task.id)">Delete</button>
+                  </div>
+                </div>
+              </template>
+              <div class="empty-task-msg" x-text="noTasksText"
+                x-show="!filteredTasks.length">
               </div>
-            </template>
-            <div x-model="todos" class="empty_task_msg" x-show="!filteredTodos">
-              No tasks at the moment!
             </div>
+          </section>
+        </div>
+      </div>
+    </main>
+    <footer class="bg-slate-300">
+      <div
+        class="container px-3 flex flex-wrap justify-between xl:max-w-screen-lg mx-auto 2xl:max-w-screen-xl">
+        <a href="/" class="self-end rotate-180">
+          <picture>
+            <source srcset="/images/logo.webp">
+            <img src="/images/logo.pmg" alt="Site logo" class="w-20 mr-3"
+              width="80" height="79">
+          </picture>
+        </a>
+        <section class="contact-info pt-5 pb-8 mb-0">
+          <h3 class="text-xl font-bold my-3">Contact info</h3>
+          <div
+            class="contact-info-container flex flex-col [&_*]:py-1 [&_*]:underline">
+            <a href="tel:+380976178193"
+              class="phone hover:no-underline">+380976178193</a>
+            <a href="mailto:kristina.cononenco@gmail.com"
+              class="email hover:no-underline">kristina.cononenco@gmail.com</a>
           </div>
         </section>
       </div>
-    </div>
+    </footer>
   </div>
-  <footer class="bg-slate-300">
-    <div
-      class="container flex justify-between xl:max-w-screen-lg mx-auto 2xl:max-w-screen-xl">
-      <a href="/"><img class="w-20 logo" src="images/logo.png" alt="logo"
-          class="logo"></a>
-      <section class="contact-info">
-        <h3 class="text-xl font-bold my-3">Contact info</h3>
-        <a href="tel:+380976178193" class="phone">+380976178193
-        </a>
-        <a href="mailto:kristina.cononenco@gmail.com"
-          class="email">kristina.cononenco@gmail.com</a>
-      </section>
-    </div>
-  </footer>
 </body>
 
 </html>
