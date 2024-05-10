@@ -2,8 +2,9 @@ const tasksApp = () => ({
   tasks: [],
   filteredTasks: [],
   filterValue: '',
-  validationError: '',
   sortValue: 'date-added',
+  previousTitle: '',
+  newTask: {},
   fetchTasks() {
     fetch('/api/tasks')
       .then(response => response.json())
@@ -24,30 +25,35 @@ const tasksApp = () => ({
 
     if (this.sortValue) this.sortTasks();
   },
+  validateTaskTitle(task) {
+    task.validationError = '';
+
+    if (!task.title) {
+      task.validationError = 'Please fill out the task description!';
+      return false;
+    }
+    return true;
+  },
   addTask(event) {
     event.preventDefault();
 
     const title = this.$root.querySelector('.user-input-task').value;
     const due_date = this.$root.querySelector('#due-date').value.toString();
 
-    if (!title) {
-      this.validationError = 'Please fill out the task description!';
-      return;
-    }
-
-    this.validationError = '';
-
-    const newTask = {
+    this.newTask = {
       title,
       completed: false,
       editing: false,
       due_date,
+      validationError: '',
     };
+
+    if (!this.validateTaskTitle(this.newTask)) return;
 
     fetch('/api/tasks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newTask),
+      body: JSON.stringify(this.newTask),
     })
       .then(response => {
         if (!response.ok) throw new Error('Failed to add task');
@@ -57,16 +63,15 @@ const tasksApp = () => ({
         this.tasks.unshift(data);
         this.filteredTasks.unshift(data);
 
-        if (this.sortValue) this.sortTasks();
-
+        this.sortTasks();
         this.filterTasks();
+
+        this.$root.querySelector('.user-input-task').value = '';
+        this.$root.querySelector('#due-date').value = '';
       })
       .catch(error => {
         console.error('Error adding task:', error);
       });
-
-    this.$root.querySelector('.user-input-task').value = '';
-    this.$root.querySelector('#due-date').value = '';
   },
   removeTask(taskId) {
     fetch(`/api/tasks/${taskId}`, {
@@ -81,20 +86,23 @@ const tasksApp = () => ({
       });
   },
   setEdit(task) {
-    task.newTitle = task.title;
+    this.previousTitle = task.title;
     task.editing = true;
     setTimeout(() => {
-      this.$root.querySelector(`#task-edit-${task.id.toString()}`).focus();
+      this.$root.querySelector(`#task-edit-${task.id}`).focus();
     });
   },
   updateTask(task) {
-    const previousTitle = task.title;
-
     const data = {
       id: task.id,
       title: task.title,
       completed: task.completed,
     };
+
+    if (!this.validateTaskTitle(task)) {
+      task.title = this.previousTitle;
+      return;
+    }
 
     fetch(`/api/tasks/${task.id}`, {
       method: 'PATCH',
@@ -106,7 +114,7 @@ const tasksApp = () => ({
 
         if (!response.ok) {
           throw new Error('Failed to update task');
-          task.title = previousTitle;
+          task.title = this.previousTitle;
         }
       })
       .catch(error => {

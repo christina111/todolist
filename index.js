@@ -26,8 +26,6 @@ db.connect(function (err) {
     console.error('Error connecting: ' + err.stack);
     return;
   }
-
-  console.log('Connected as id ' + db.threadId);
 });
 
 app.get('/api/tasks', (req, res) => {
@@ -62,25 +60,6 @@ app.post('/api/tasks', (req, res) => {
     });
   });
 });
-
-// app.put('/api/tasks/:taskId', (req, res) => {
-//   const taskId = req.params.taskId;
-//   const { title, completed } = req.body;
-
-//   const sql = 'UPDATE tasks SET Title = ?, Completed = ? WHERE Id = ?';
-//   const values = [title, completed, taskId];
-
-//   db.query(sql, values, (err, result) => {
-//     if (err) {
-//       console.error('Error updating task:', err);
-//       return res.status(500).json({ error: 'Failed to update task' });
-//     }
-//     if (result.affectedRows === 0) {
-//       return res.status(404).json({ error: 'Task not found' });
-//     }
-//     res.status(200).json({ message: 'Task updated successfully' });
-//   });
-// });
 
 app.patch('/api/tasks/:taskId', (req, res) => {
   const taskId = req.params.taskId;
@@ -117,5 +96,5 @@ app.delete('/api/tasks/:id', (req, res) => {
 });
 
 app.listen(process.env.PORT, () => {
-  console.log('Server is running');
+  console.log(`Server is running on http://localhost:${process.env.PORT}`);
 });

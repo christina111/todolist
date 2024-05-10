@@ -4,13 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Todo list | Homepage</title>
+  <title>Tasks for Kristina</title>
   <meta name="description"
     content="Todo list made as a technical assignment for WebElephant by junior but enthusiastic developer Kristina Kononenko!">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.8/axios.min.js"></script>
   <script defer
     src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <script src="/js/tasksApp.js"></script>
@@ -33,7 +31,6 @@
       }
     }
   </style>
-  <title>Tasks for Kristina</title>
 </head>
 
 <body>
@@ -44,7 +41,7 @@
         <a href="/">
           <picture>
             <source srcset="/images/logo.webp">
-            <img src="/images/logo.pmg" alt="Site logo" class="w-20" width="80"
+            <img src="/images/logo.png" alt="Site logo" class="w-20" width="80"
               height="79">
           </picture>
         </a>
@@ -60,7 +57,8 @@
                 <div class="task-title mr-3 grow min-w-20">
                   <label class="block mb-2 text-sm" for="task-title">What do
                     you want me to do?</label>
-                  <input id="task-title" required @keydown="validationError=''"
+                  <input id="task-title" required maxlength="255"
+                    @keydown="newTask.validationError=''"
                     class="user-input-task w-full text-base" type="text"
                     placeholder="Type something here...." />
                 </div>
@@ -72,7 +70,9 @@
               </fieldset>
               <div
                 class="error-message mb-5 text-red-500 absolute bottom-3 left-0 text-sm"
-                x-show="validationError" x-text="validationError"></div>
+                x-show="newTask.validationError"
+                x-text="newTask.validationError">
+              </div>
             </form>
           </section>
           <section id="list-of-tasks">
@@ -97,37 +97,41 @@
               <template class="task-list" x-show="filteredTasks.length"
                 x-for="task in filteredTasks" :key="task.id">
                 <div
-                  class="task px-5 py-1 rounded-md bg-slate-100 flex flex-wrap mb-3 w-full md:items-center">
+                  class="task px-5 py-1 rounded-md bg-slate-100 flex flex-wrap mb-3 w-full md:items-center relative">
+                  <div
+                    class="error-message mb-5 text-red-500 absolute top-1 left-11 text-sm"
+                    x-show="task.validationError" x-text="task.validationError">
+                  </div>
                   <input type="checkbox" :id="`completed-task-${task.id}`"
-                    class="w-4 h-4 accent-slate-700 cursor-pointer mt-6 md:mt-0"
+                    class="w-4 h-4 accent-slate-700 cursor-pointer mt-8 md:mt-0"
                     @click="completeTask(task)" :checked="task.completed">
                   <label :for="`completed-task-${task.id}`"
                     class="sr-only">Completed</label>
                   <div
-                    class="text-title py-4 relative min-w-72 md:grow basis-0 px-2">
+                    class="text-title py-5 relative min-w-70 grow basis-0 pl-2 pr-0 md:pr-4">
                     <div x-text="task.title"
-                      class="task-title break-words py-1 px-3 w-full border border-transparent leading-tight"
+                      class="task-title break-words py-2 px-3 w-full border-x border-x-transparent leading-tight"
                       x-show="!task.editing" @click="setEdit(task)"
                       :class="{'completed line-through' : task.completed }">
                     </div>
-                    <input type="text" x-show="task.editing"
-                      x-model="task.title" :value="task.title"
+                    <input type="text" x-show="task.editing" maxlength="255"
+                      x-model="task.title" :value="task.title" required
+                      @keydown="task.validationError=''"
                       @click.away="updateTask(task)"
                       class="task-edit border outline-none rounded-md border-slate-300 py-1 px-3 w-full leading-tight"
                       :id="`task-edit-${task.id}`" />
                     <div x-text="task.due_date"
-                      class="due-date absolute text-xs text-slate-700 bottom-0 left-5">
+                      class="due-date absolute text-xs text-slate-700 bottom-1 left-5">
                     </div>
                   </div>
                   <div
-                    class="buttons-wrapper flex my-3 justify-end basis-full md:basis-0">
-                    <button class="mr-3 min-w-20"
+                    class="buttons-wrapper flex my-3 justify-end basis-full md:basis-0 min-w-40">
+                    <button class="min-w-20"
                       x-show="!task.editing && !task.completed"
-                      @click="setEdit(task)">Update</button>
+                      @click="setEdit(task)">Edit</button>
                     <button x-show="!task.completed && task.editing"
-                      @click="updateTask(task)"
-                      class="mr-3 min-w-20">Save</button>
-                    <button class="bg-red-600 cursor-pointer"
+                      class="min-w-20">Update</button>
+                    <button class="bg-red-600 cursor-pointer ml-3"
                       @click="removeTask(task.id)">Delete</button>
                   </div>
                 </div>
@@ -146,7 +150,7 @@
         <a href="/" class="self-end rotate-180">
           <picture>
             <source srcset="/images/logo.webp">
-            <img src="/images/logo.pmg" alt="Site logo" class="w-20 mr-3"
+            <img src="/images/logo.png" alt="Site logo" class="w-20 ml-3"
               width="80" height="79">
           </picture>
         </a>
